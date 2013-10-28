@@ -1,5 +1,5 @@
 <?php namespace Command;
 
-class CommandNotFoundException extends RangeException {
+class CommandNotFoundException extends \RangeException {
     
 }
