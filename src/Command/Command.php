@@ -118,6 +118,8 @@ abstract class Command {
             if ($set)
             {
                 $this->options[$option[0]] = $value;
+            }elseif(isset($option[4])){
+                $this->options[$option[0]] = $$option[4];
             }
         }
     }
