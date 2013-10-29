@@ -125,7 +125,7 @@ abstract class Command {
     }
 
     // Returns colored string
-    private function getColoredString($string, $foreground_color = null, $background_color = null)
+    public function getColoredString($string, $foreground_color = null, $background_color = null)
     {
         $colored_string = "";
 
@@ -280,12 +280,16 @@ abstract class Command {
     {
         return trim(fgets(STDIN));
     }
+    
+    protected function output($output, $verbosity){
+        if(!$this->quiet || $this->verbosity >= $verbosity){
+            echo $output;
+        }
+    }
 
     protected function line($output, $verbosity = 0)
     {
-        if(!$this->quiet || $this->verbosity >= $verbosity){
-            echo $output . PHP_EOL;
-        }
+        $this->output($output . PHP_EOL, $verbosity);
     }
 
     protected function info($output, $verbosity = 0)
