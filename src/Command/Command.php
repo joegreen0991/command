@@ -282,7 +282,7 @@ abstract class Command {
     }
     
     protected function output($output, $verbosity){
-        if(!$this->quiet || ($this->verbosity >= $verbosity)){
+        if(!$this->quiet && ($this->verbosity >= $verbosity)){
             echo $output;
         }
     }
