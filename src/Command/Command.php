@@ -281,7 +281,7 @@ abstract class Command {
         return trim(fgets(STDIN));
     }
     
-    protected function output($output, $verbosity){
+    protected function output($output, $verbosity = 0){
         if(!$this->quiet && ($this->verbosity >= $verbosity)){
             echo $output;
         }
