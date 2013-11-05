@@ -16,6 +16,9 @@ abstract class Command {
     protected $quiet = false;
     
     protected $name;
+    
+    protected $app;
+    
     // Set up shell colors
     private $foreground_colors = array(
         'black' => '0;30',
@@ -65,6 +68,16 @@ abstract class Command {
         if($this->getOption('verbose') !== false){
             $this->verbosity = strlen($this->getOption('verbose'));
         }
+    }
+    
+    protected function setApplication(Application $app)
+    {
+        $this->app = $app;
+    }
+    
+    protected function getApplication()
+    {
+        return $this->app;
     }
 
     private function buildArguments($arguments)
