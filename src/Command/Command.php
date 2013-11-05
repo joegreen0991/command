@@ -70,12 +70,12 @@ abstract class Command {
         }
     }
     
-    protected function setApplication(Application $app)
+    public function setApplication(Application $app)
     {
         $this->app = $app;
     }
     
-    protected function getApplication()
+    public function getApplication()
     {
         return $this->app;
     }
