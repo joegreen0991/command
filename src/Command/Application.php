@@ -75,6 +75,8 @@ class Application extends Pimple {
         {
             $resolved = new $resolved($command, $inputArgs, $inputOptions);
         }
+        
+        $resolved->setApplication($this);
 
         $resolved->fire();
     }
