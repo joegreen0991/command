@@ -6,6 +6,20 @@ class Application extends Pimple {
 
     protected $commands = array();
     protected $commandDescriptions = array();
+    
+    protected $autoResolveNamespaceSeparator = ':';
+    
+    protected $autoResolveCommands = false;
+    
+    public function setAutoResolveNamespaceSeparator($sep)
+    {
+        $this->autoResolveNamespaceSeparator = $sep;
+    }
+    
+    public function setAutoResolveCommands($status)
+    {
+        $this->autoResolveCommands = (bool)$status;
+    }
 
     public function registerCommand($name, $command, $description = '')
     {
@@ -46,12 +60,27 @@ class Application extends Pimple {
     public function getCommand($command)
     {
 
-        if (!isset($this->commands[$command]))
+        if(isset($this->commands[$command]))
         {
-            throw new CommandNotFoundException("Command [$command] does not exist");
+            return $this->commands[$command];
         }
+        
+        if($this->autoResolveCommands) {
+            
+            $class = str_replace(' ','\\', ucwords(str_replace($this->autoResolveNamespaceSeparator,' ',$command)));
 
-        return $this->commands[$command];
+            if(class_exists($class))
+            {
+                if(!is_subclass_of($class, __NAMESPACE__ . '\\Command'))
+                {
+                    throw new CommandNotFoundException("Command [$command] must extend " .  __NAMESPACE__ . '\\Command');
+                }
+                
+                return $class;
+            }
+        }
+        
+        throw new CommandNotFoundException("Command [$command] does not exist");
     }
 
     public function runFromArgv()
@@ -79,6 +108,7 @@ class Application extends Pimple {
         $resolved->setApplication($this);
 
         $resolved->fire();
+
     }
 
 }
