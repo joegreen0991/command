@@ -16,7 +16,7 @@ abstract class Command {
     protected $app;
     protected $output;
 
-    public function __construct($name, $arguments = array(), $options = array(), $output = null)
+    public function __construct($name, $arguments = array(), $options = array(), LoggerInterface $output = null)
     {
         $this->name = $name;
 
@@ -41,7 +41,7 @@ abstract class Command {
         $this->app = $app;
     }
 
-    public function setOutput($output)
+    public function setOutput(LoggerInterface $output)
     {
         $this->output = $output;
     }
