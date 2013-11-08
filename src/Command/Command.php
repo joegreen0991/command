@@ -19,39 +19,12 @@ abstract class Command {
     
     protected $app;
     
-    // Set up shell colors
-    private $foreground_colors = array(
-        'black' => '0;30',
-        'dark_gray' => '1;30',
-        'blue' => '0;34',
-        'light_blue' => '1;34',
-        'green' => '0;32',
-        'cyan' => '0;36',
-        'light_cyan' => '1;36',
-        'red' => '0;31',
-        'light_red' => '1;31',
-        'purple' => '0;35',
-        'light_purple' => '1;35',
-        'brown' => '0;33',
-        'yellow' => '1;33',
-        'light_gray' => '0;37',
-        'white' => '1;37',
-    );
-    // Set up shell colors
-    private $background_colors = array(
-        'black' => '40',
-        'red' => '41',
-        'green' => '42',
-        'yellow' => '43',
-        'blue' => '44',
-        'magenta' => '45',
-        'cyan' => '46',
-        'light_gray' => '47',
-    );
 
     public function __construct($name, $arguments = array(), $options = array())
     {
         $this->name = $name;
+        
+        $this->output = new StdOutput();
         
         if(isset($options['help']) || isset($options['h'])){
             $this->showUsage();
@@ -70,14 +43,12 @@ abstract class Command {
         }
     }
     
-    public function setApplication(Application $app)
-    {
+    public function setApplication(Application $app){
         $this->app = $app;
     }
     
-    public function getApplication()
-    {
-        return $this->app;
+    public function setOutput($output){
+        $this->output = $output;
     }
 
     private function buildArguments($arguments)
@@ -131,32 +102,8 @@ abstract class Command {
             if ($set)
             {
                 $this->options[$option[0]] = $value;
-            }elseif(isset($option[4])){
-                $this->options[$option[0]] = $option[4];
             }
         }
-    }
-
-    // Returns colored string
-    public function getColoredString($string, $foreground_color = null, $background_color = null)
-    {
-        $colored_string = "";
-
-        // Check if given foreground color found
-        if (isset($this->foreground_colors[$foreground_color]))
-        {
-            $colored_string .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
-        }
-        // Check if given background color found
-        if (isset($this->background_colors[$background_color]))
-        {
-            $colored_string .= "\033[" . $this->background_colors[$background_color] . "m";
-        }
-
-        // Add string and end coloring
-        $colored_string .= $string . "\033[0m";
-
-        return $colored_string;
     }
 
     private function hasSttyAvailable()
@@ -187,7 +134,7 @@ abstract class Command {
             }
         }
 
-        $this->success('Usage: ' . $this->name . ' ' . $cmd);
+        $this->output->info('Usage: ' . $this->name . ' ' . $cmd);
         
         $required = '';
         
@@ -207,13 +154,13 @@ abstract class Command {
             
         }
         
-        $this->success($required);
+        $this->output->info($required);
     }
 
     protected function ask($question)
     {
 
-        $this->line($question);
+        $this->output->info($question);
 
         return $this->readInput();
     }
@@ -233,9 +180,9 @@ abstract class Command {
                 $exe = $tmpExe;
             }
 
-            $this->line($question);
+            $this->output->info($question);
             $value = rtrim(shell_exec($exe));
-            $this->line('');
+            $this->output->info('');
 
             if (isset($tmpExe))
             {
@@ -247,7 +194,7 @@ abstract class Command {
 
         if ($this->hasSttyAvailable())
         {
-            $this->line($question);
+            $this->output->info($question);
 
             $sttyMode = shell_exec('stty -g');
 
@@ -260,18 +207,18 @@ abstract class Command {
                 throw new \RuntimeException('Aborted');
             }
 
-            $this->line('');
+            $this->output->info('');
 
             return $value;
         }
 
         if (false !== $shell = $this->getShell())
         {
-            $this->line($question);
+            $this->output->info($question);
             $readCmd = $shell === 'csh' ? 'set mypassword = $<' : 'read -r mypassword';
             $command = sprintf("/usr/bin/env %s -c 'stty -echo; %s; stty echo; echo \$mypassword'", $shell, $readCmd);
             $value = rtrim(shell_exec($command));
-            $this->line('');
+            $this->output->infoe('');
 
             return $value;
         }
@@ -282,7 +229,7 @@ abstract class Command {
     protected function confirm($question)
     {
 
-        $this->line($question . " Y/n");
+        $this->output->info($question . " Y/n");
 
         $line = strtolower($this->readInput());
 
@@ -293,41 +240,11 @@ abstract class Command {
     {
         return trim(fgets(STDIN));
     }
+
     
-    protected function output($output, $verbosity = 0){
-        if(!$this->quiet && ($this->verbosity >= $verbosity)){
-            echo $output;
-        }
-    }
-
-    protected function line($output, $verbosity = 0)
-    {
-        $this->output($output . PHP_EOL, $verbosity);
-    }
-
-    protected function info($output, $verbosity = 0)
-    {
-        $this->line($this->getColoredString($output, 'blue'),$verbosity);
-    }
-    
-    protected function comment($output, $verbosity = 0)
-    {
-        $this->line($this->getColoredString($output, 'yellow'),$verbosity);
-    }
-
-    protected function success($output, $verbosity = 0)
-    {
-        $this->line($this->getColoredString($output, 'green'),$verbosity);
-    }
-
-    protected function error($output, $verbosity = 0)
-    {
-        $this->line($this->getColoredString($output, 'white', 'red'),$verbosity);
-    }
-
     protected function fatal($output, $exitcode = 1)
     {
-        $this->error($output);
+        $this->output->critical($output);
         $this->bail($exitcode);
     }
     
@@ -357,15 +274,6 @@ abstract class Command {
             array('quiet', 'q', self::VALUE_NONE, 'Suppress all output'),
             array('verbose', 'v', self::OPTIONAL, 'Set the verbosity level'),
         ), $this->getOptions());
-    }
-    
-    /**
-     * A function that will be called before "fire"
-     * Can be used in abstract base classes to set up defaults
-     */
-    public function configure()
-    {
-        
     }
 
     /**
@@ -418,6 +326,11 @@ abstract class Command {
         list($arguments, $options) = static::parseCliArgs(array_slice($_SERVER['argv'], 1));
        
         return new static($_SERVER['argv'][0], $arguments, $options);
+    }
+    
+    public function configure()
+    {
+        
     }
 
     abstract public function fire();
