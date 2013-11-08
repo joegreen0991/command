@@ -6,20 +6,6 @@ class Application extends Pimple {
 
     protected $commands = array();
     protected $commandDescriptions = array();
-    
-    protected $autoResolveNamespaceSeparator = ':';
-    
-    protected $autoResolveCommands = false;
-    
-    public function setAutoResolveNamespaceSeparator($sep)
-    {
-        $this->autoResolveNamespaceSeparator = $sep;
-    }
-    
-    public function setAutoResolveCommands($status)
-    {
-        $this->autoResolveCommands = (bool)$status;
-    }
 
     public function registerCommand($name, $command, $description = '')
     {
@@ -60,30 +46,15 @@ class Application extends Pimple {
     public function getCommand($command)
     {
 
-        if(isset($this->commands[$command]))
+        if (!isset($this->commands[$command]))
         {
-            return $this->commands[$command];
+            throw new CommandNotFoundException("Command [$command] does not exist");
         }
-        
-        if($this->autoResolveCommands) {
-            
-            $class = str_replace(' ','\\', ucwords(str_replace($this->autoResolveNamespaceSeparator,' ',$command)));
 
-            if(class_exists($class))
-            {
-                if(!is_subclass_of($class, __NAMESPACE__ . '\\Command'))
-                {
-                    throw new CommandNotFoundException("Command [$command] must extend " .  __NAMESPACE__ . '\\Command');
-                }
-                
-                return $class;
-            }
-        }
-        
-        throw new CommandNotFoundException("Command [$command] does not exist");
+        return $this->commands[$command];
     }
 
-    public function runFromArgv()
+    public function createFromArgv()
     {
 
         if($_SERVER['argc'] < 2){
@@ -92,10 +63,10 @@ class Application extends Pimple {
         
         list($arguments, $options) = Command::parseArgs(array_slice($_SERVER['argv'], 2));
 
-        $this->run($_SERVER['argv'][1], $arguments, $options);
+        $this->create($_SERVER['argv'][1], $arguments, $options);
     }
 
-    public function run($command = null, $inputArgs = array(), $inputOptions = array())
+    public function create($command = null, $inputArgs = array(), $inputOptions = array())
     {
 
         $resolved = $this->getCommand($command);
@@ -104,13 +75,8 @@ class Application extends Pimple {
         {
             $resolved = new $resolved($command, $inputArgs, $inputOptions);
         }
-        
-        $resolved->setApplication($this);
-        
-        $resolved->configure();
 
-        $resolved->fire();
-
+        return $resolved;
     }
 
 }
