@@ -7,10 +7,6 @@ Use Psr\Log\LogLevel;
 
 Class StdOutput extends AbstractLogger {
 
-    protected $quiet = false;
-    
-    protected $verbose = false;
-
     const TAB = '    ';
 
     // Set up shell colors
@@ -42,6 +38,7 @@ Class StdOutput extends AbstractLogger {
         'cyan' => '46',
         'light_gray' => '47',
     );
+    
     public static $colors = array(
         LogLevel::DEBUG => 'cyan', // Cyan
         LogLevel::INFO => 'green', // Green
@@ -52,14 +49,6 @@ Class StdOutput extends AbstractLogger {
         LogLevel::ALERT => array('white', 'purple'), // White/Purple
         LogLevel::EMERGENCY => array('white', 'red'), // White/Red
     );
-    
-    public function setVerbosity($status){
-        $this->verbose = (bool)$status;
-    }
-    
-    public function setQuiet($status){
-        $this->quiet = (bool)$status;
-    }
 
     // Returns colored string
     public function getColoredString($string, $foreground_color = null, $background_color = null)
@@ -85,11 +74,6 @@ Class StdOutput extends AbstractLogger {
 
     public function log($level, $message, array $context = array())
     {
-
-        if ($this->quiet || (!$this->verbose && $level === LogLevel::DEBUG))
-        {
-            return;
-        }
 
         $lines = array(
             'Message : ' . $message,
