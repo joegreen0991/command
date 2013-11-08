@@ -106,6 +106,8 @@ class Application extends Pimple {
         }
         
         $resolved->setApplication($this);
+        
+        $resolved->configure();
 
         $resolved->fire();
 
