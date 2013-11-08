@@ -127,7 +127,7 @@ abstract class Command {
 
         foreach ($this->getArguments() as $argument) {
 
-            if ($argument[1] & self::REQUIRED === self::REQUIRED)
+            if (($argument[1] & self::REQUIRED)  === self::REQUIRED)
             {
                 $cmd .= ' ' . $argument[0];
             } elseif (($argument[1] & self::OPTIONAL) === self::OPTIONAL)
