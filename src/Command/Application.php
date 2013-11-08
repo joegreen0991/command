@@ -1,6 +1,7 @@
 <?php namespace Command;
 
 use Pimple;
+use Psr\Log\LoggerInterface;
 
 class Application extends Pimple {
 
@@ -95,7 +96,7 @@ class Application extends Pimple {
         $this->run($_SERVER['argv'][1], $arguments, $options, $output);
     }
 
-    public function run($command = null, $inputArgs = array(), $inputOptions = array(), $output = null)
+    public function run($command = null, $inputArgs = array(), $inputOptions = array(), LoggerInterface $output = null)
     {
 
         $resolved = $this->getCommand($command);
