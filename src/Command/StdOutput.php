@@ -1,6 +1,6 @@
 <?php namespace Command;
 
-Class StdOutput extends Psr\Log\AbstractLogger {
+Class StdOutput extends \Psr\Log\AbstractLogger {
   
   // Set up shell colors
     private $foreground_colors = array(
@@ -67,23 +67,24 @@ Class StdOutput extends Psr\Log\AbstractLogger {
   
   public function log($level, $message, $context)
   {
+      die('here');
         $lines = array(
             'Message : ' . $message,
             'Level : ' . $level
         );
         
-        if (isset($record['context']['exception'])) {
-            $lines[] = 'File : ' . $record['context']['exception']['file'];
+        if (isset($context['exception'])) {
+            $lines[] = 'File : ' . $context['exception']['file'];
             $lines[] = 'Trace : ';
             
-            foreach($record['context']['exception']['trace'] as $line){
+            foreach($context['exception']['trace'] as $line){
                 $lines[] = self::TAB . $line;
             }
             
-            unset($record['context']['exception']);
+            unset($context['exception']);
         }
            
-        foreach ($record['context'] as $key => $val) {
+        foreach ($context as $key => $val) {
             $lines[] = $key . ' : ' . (is_scalar($val) ? $val : $this->toJson($val));
         }
         
