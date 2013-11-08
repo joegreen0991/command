@@ -1,4 +1,6 @@
-<?php namespace Command;
+<?php
+
+namespace Command;
 
 abstract class Command {
 
@@ -10,41 +12,42 @@ abstract class Command {
     private static $stty = null;
     private $arguments = array();
     private $options = array();
-    
     protected $name;
-    
     protected $app;
-    
     protected $output;
-    
 
     public function __construct($name, $arguments = array(), $options = array(), $output = null)
     {
         $this->name = $name;
-        
-        $this->output = $output ?: new StdOutput();
-        
-        if(isset($options['help']) || isset($options['h'])){
+
+        $this->output = $output ? : new StdOutput();
+
+        if (isset($options['help']) || isset($options['h']))
+        {
             $this->showUsage();
             $this->bail();
         }
-        
+
         $this->buildArguments($arguments);
         $this->buildOptions($options);
 
-        $this->output->setQuiet($this->getOption('quiet'));
-        $this->output->setVerbosity($this->getOption('verbose'));
+        if($this->getOption('quiet')){
+            $this->output = new QuietOutput();
+        }
     }
-    
-    public function setApplication(Application $app){
+
+    public function setApplication(Application $app)
+    {
         $this->app = $app;
     }
-    
-    public function setOutput($output){
+
+    public function setOutput($output)
+    {
         $this->output = $output;
     }
-    
-    public function getOutput(){
+
+    public function getOutput()
+    {
         return $this->output;
     }
 
@@ -77,7 +80,7 @@ abstract class Command {
             {
                 $value = isset($options[$option[0]]) ? $options[$option[0]] : $options[$option[1]];
             }
-            
+
             $array = self::VALUE_IS_ARRAY | self::REQUIRED;
 
             if ($set && (($option[2] & $array) === $array))
@@ -85,7 +88,7 @@ abstract class Command {
                 $this->showUsage();
                 $this->bail();
             }
-            
+
             if ($set && !$value && (($option[2] & self::REQUIRED) === self::REQUIRED))
             {
                 $this->fatal('Value for option "--' . $option[0] . ' (-' . $option[1] . ')" is required');
@@ -125,16 +128,16 @@ abstract class Command {
             if ($argument[1] & self::REQUIRED === self::REQUIRED)
             {
                 $cmd .= ' ' . $argument[0];
-            } elseif (($argument[1] & self::OPTIONAL)  === self::OPTIONAL)
+            } elseif (($argument[1] & self::OPTIONAL) === self::OPTIONAL)
             {
                 $cmd .= ' [' . $argument[0] . ']';
             }
         }
 
         $this->output->info('Usage: ' . $this->name . ' ' . $cmd);
-        
+
         $required = '';
-        
+
         foreach ($this->getMergedOptions() as $argument) {
 
             $required .= "\n\t --" . $argument[0] . "\t" . '(-' . $argument[1];
@@ -142,15 +145,14 @@ abstract class Command {
             if (($argument[2] & self::REQUIRED) === self::REQUIRED)
             {
                 $required .= '=""';
-            } elseif (($argument[2] & self::OPTIONAL)  === self::OPTIONAL)
+            } elseif (($argument[2] & self::OPTIONAL) === self::OPTIONAL)
             {
-                $required .=  '[=""]';
+                $required .= '[=""]';
             }
-            
+
             $required .= ")\t" . $argument[3];
-            
         }
-        
+
         $this->output->info($required);
     }
 
@@ -238,20 +240,21 @@ abstract class Command {
         return trim(fgets(STDIN));
     }
 
-    
     protected function fatal($output, $exitcode = 1)
     {
         $this->output->critical($output);
         $this->bail($exitcode);
     }
-    
-    public function onSigTerm($handler){
-        
+
+    public function onSigTerm($handler)
+    {
+
         pcntl_signal(SIGTERM, $handler);
         pcntl_signal(SIGINT, $handler);
     }
-    
-    protected function bail($exitcode = 1){
+
+    protected function bail($exitcode = 1)
+    {
         exit($exitcode);
     }
 
@@ -264,13 +267,14 @@ abstract class Command {
     {
         return isset($this->options[$name]) ? $this->options[$name] : $default;
     }
-    
-    private function getMergedOptions(){
+
+    private function getMergedOptions()
+    {
         return array_merge(array(
             array('help', 'h', self::VALUE_NONE, 'Display help'),
             array('quiet', 'q', self::VALUE_NONE, 'Suppress all output'),
             array('verbose', 'v', self::OPTIONAL, 'Set the verbosity level'),
-        ), $this->getOptions());
+                ), $this->getOptions());
     }
 
     /**
@@ -293,7 +297,8 @@ abstract class Command {
         return array();
     }
 
-    public static function parseArgs($args){
+    public static function parseArgs($args)
+    {
         // Build the arguments list
         $arguments = array();
         $options = array();
@@ -313,7 +318,7 @@ abstract class Command {
                 $arguments[$i++] = $arg;
             }
         }
-        
+
         return array($arguments, $options);
     }
 
@@ -321,10 +326,10 @@ abstract class Command {
     {
 
         list($arguments, $options) = static::parseCliArgs(array_slice($_SERVER['argv'], 1));
-       
+
         return new static($_SERVER['argv'][0], $arguments, $options);
     }
-    
+
     public function configure()
     {
         
