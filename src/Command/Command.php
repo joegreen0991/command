@@ -15,12 +15,14 @@ abstract class Command {
     
     protected $app;
     
+    protected $output;
+    
 
-    public function __construct($name, $arguments = array(), $options = array())
+    public function __construct($name, $arguments = array(), $options = array(), $output = null)
     {
         $this->name = $name;
         
-        $this->output = new StdOutput();
+        $this->output = $output ?: new StdOutput();
         
         if(isset($options['help']) || isset($options['h'])){
             $this->showUsage();
