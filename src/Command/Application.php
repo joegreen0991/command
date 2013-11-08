@@ -54,7 +54,7 @@ class Application extends Pimple {
         return $this->commands[$command];
     }
 
-    public function createFromArgv()
+    public function runFromArgv()
     {
 
         if($_SERVER['argc'] < 2){
@@ -63,10 +63,10 @@ class Application extends Pimple {
         
         list($arguments, $options) = Command::parseArgs(array_slice($_SERVER['argv'], 2));
 
-        $this->create($_SERVER['argv'][1], $arguments, $options);
+        $this->run($_SERVER['argv'][1], $arguments, $options);
     }
 
-    public function create($command = null, $inputArgs = array(), $inputOptions = array())
+    public function run($command = null, $inputArgs = array(), $inputOptions = array())
     {
 
         $resolved = $this->getCommand($command);
@@ -76,7 +76,8 @@ class Application extends Pimple {
             $resolved = new $resolved($command, $inputArgs, $inputOptions);
         }
 
-        return $resolved;
+        $resolved->configure();
+        $resolved->fire();
     }
 
 }
