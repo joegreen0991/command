@@ -358,6 +358,15 @@ abstract class Command {
             array('verbose', 'v', self::OPTIONAL, 'Set the verbosity level'),
         ), $this->getOptions());
     }
+    
+    /**
+     * A function that will be called before "fire"
+     * Can be used in abstract base classes to set up defaults
+     */
+    public function configure()
+    {
+        
+    }
 
     /**
      * Get the console command arguments.
