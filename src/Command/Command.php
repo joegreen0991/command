@@ -11,10 +11,6 @@ abstract class Command {
     private $arguments = array();
     private $options = array();
     
-    protected $verbosity = 0;
-    
-    protected $quiet = false;
-    
     protected $name;
     
     protected $app;
@@ -34,13 +30,8 @@ abstract class Command {
         $this->buildArguments($arguments);
         $this->buildOptions($options);
 
-        if($this->getOption('quiet') !== false){
-            $this->quiet = true;
-        }
-        
-        if($this->getOption('verbose') !== false){
-            $this->verbosity = strlen($this->getOption('verbose'));
-        }
+        $this->output->setQuiet($this->getOption('quiet'));
+        $this->output->setVerbosity($this->getOption('verbose'));
     }
     
     public function setApplication(Application $app){
@@ -50,7 +41,6 @@ abstract class Command {
     public function setOutput($output){
         $this->output = $output;
     }
-    
     
     public function getOutput(){
         return $this->output;
