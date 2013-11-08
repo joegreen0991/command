@@ -1,9 +1,20 @@
-<?php namespace Command;
+<?php
 
-Class StdOutput extends \Psr\Log\AbstractLogger {
-  
-  // Set up shell colors
-    private $foreground_colors = array(
+namespace Command;
+
+Use Psr\Log\AbstractLogger;
+Use Psr\Log\LogLevel;
+
+Class StdOutput extends AbstractLogger {
+
+    protected $quiet = false;
+    
+    protected $verbose = false;
+
+    const TAB = '    ';
+
+    // Set up shell colors
+    private static $foreground_colors = array(
         'black' => '0;30',
         'dark_gray' => '1;30',
         'blue' => '0;34',
@@ -21,7 +32,7 @@ Class StdOutput extends \Psr\Log\AbstractLogger {
         'white' => '1;37',
     );
     // Set up shell colors
-    private $background_colors = array(
+    private static $background_colors = array(
         'black' => '40',
         'red' => '41',
         'green' => '42',
@@ -31,21 +42,39 @@ Class StdOutput extends \Psr\Log\AbstractLogger {
         'cyan' => '46',
         'light_gray' => '47',
     );
+    public static $colors = array(
+        LogLevel::DEBUG => 'cyan', // Cyan
+        LogLevel::INFO => 'green', // Green
+        LogLevel::NOTICE => 'yellow', // Yellow
+        LogLevel::WARNING => 'purple', // Purple
+        LogLevel::ERROR => 'red', // Red
+        LogLevel::CRITICAL => array('black', 'yellow'), // Black/Yellow
+        LogLevel::ALERT => array('white', 'purple'), // White/Purple
+        LogLevel::EMERGENCY => array('white', 'red'), // White/Red
+    );
     
+    public function setVerbosity($status){
+        $this->verbose = (bool)$status;
+    }
+    
+    public function setQuiet($status){
+        $this->quiet = (bool)$status;
+    }
+
     // Returns colored string
     public function getColoredString($string, $foreground_color = null, $background_color = null)
     {
         $colored_string = "";
 
         // Check if given foreground color found
-        if (isset($this->foreground_colors[$foreground_color]))
+        if (isset(self::$foreground_colors[$foreground_color]))
         {
-            $colored_string .= "\033[" . $this->foreground_colors[$foreground_color] . "m";
+            $colored_string .= "\033[" . self::$foreground_colors[$foreground_color] . "m";
         }
         // Check if given background color found
-        if (isset($this->background_colors[$background_color]))
+        if (isset(self::$background_colors[$background_color]))
         {
-            $colored_string .= "\033[" . $this->background_colors[$background_color] . "m";
+            $colored_string .= "\033[" . self::$background_colors[$background_color] . "m";
         }
 
         // Add string and end coloring
@@ -53,68 +82,63 @@ Class StdOutput extends \Psr\Log\AbstractLogger {
 
         return $colored_string;
     }
-  
-  public static $colors = array(
-      LOGGER::DEBUG => 'cyan', // Cyan
-      LOGGER::INFO => 'green', // Green
-      LOGGER::NOTICE => 'yellow', // Yellow
-      LOGGER::WARNING => 'purple', // Purple
-      LOGGER::ERROR => 'red', // Red
-      LOGGER::CRITICAL => array('black','yellow'), // Black/Yellow
-      LOGGER::ALERT => array('white','purple'), // White/Purple
-      LOGGER::EMERGENCY => array('white','red'), // White/Red
-   );
-  
-  public function log($level, $message, $context)
-  {
-      die('here');
+
+    public function log($level, $message, array $context = array())
+    {
+
+        if ($this->quiet || (!$this->verbose && $level === LogLevel::DEBUG))
+        {
+            return;
+        }
+
         $lines = array(
             'Message : ' . $message,
             'Level : ' . $level
         );
-        
-        if (isset($context['exception'])) {
+
+        if (isset($context['exception']))
+        {
             $lines[] = 'File : ' . $context['exception']['file'];
             $lines[] = 'Trace : ';
-            
-            foreach($context['exception']['trace'] as $line){
+
+            foreach ($context['exception']['trace'] as $line) {
                 $lines[] = self::TAB . $line;
             }
-            
+
             unset($context['exception']);
         }
-           
+
         foreach ($context as $key => $val) {
             $lines[] = $key . ' : ' . (is_scalar($val) ? $val : $this->toJson($val));
         }
-        
-        
+
+
         // Wrap the whole thing in a nice red square
-        
         // Get the max row length
         $max = max(array_map('strlen', $lines));
-        
+
         // Pad each of the rows to this length
-        foreach($lines as $i => $line){
+        foreach ($lines as $i => $line) {
             $lines[$i] = self::TAB . str_pad($line, $max + 5);
         }
-        
+
         $string = implode(PHP_EOL, $lines);
-        
+
         $colors = self::$colors[$level];
-        
-        if(is_array($colors)){
+
+        if (is_array($colors))
+        {
             // Create a padding string of empty spaces the same length as the max row
             $pad = PHP_EOL . str_repeat(self::TAB . str_repeat(" ", $max + 5) . PHP_EOL, 2);
 
             // Create the coloured string
             $string = PHP_EOL . $this->getColouedString($pad . $string . $pad, $colors[0], $colors[1]) . PHP_EOL;
-            
-        }else{
+        } else
+        {
             $string = $this->getColoredString($string, $colors);
         }
-        
+
         echo $string;
-  }
-  
+    }
+
 }
