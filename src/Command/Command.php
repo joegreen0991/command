@@ -2,6 +2,8 @@
 
 namespace Command;
 
+use Psr\Log\LoggerInterface;
+
 abstract class Command {
 
     const OPTIONAL = 1;
