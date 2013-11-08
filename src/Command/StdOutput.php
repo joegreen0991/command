@@ -55,9 +55,9 @@ Class StdOutput extends Psr\Log\AbstractLogger {
             $pad = PHP_EOL . str_repeat(self::TAB . str_repeat(" ", $max + 5) . PHP_EOL, 2);
 
             // Create the coloured string
-            return "\n\033[{$colors[0]}m\033[{$colors[1]}m" . $pad . $string . $pad . "\033[0m\n";
+            echo "\n\033[{$colors[0]}m\033[{$colors[1]}m" . $pad . $string . $pad . "\033[0m\n";
         }else{
-            return "\n\033[{$colors}m" . $string . "\033[0m\n";
+            echo "\033[{$colors}m" . $string . "\033[0m";
         }
   }
   
