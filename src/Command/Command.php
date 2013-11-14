@@ -67,6 +67,9 @@ abstract class Command {
             if (isset($arguments[$i]))
             {
                 $this->arguments[$argument[0]] = $arguments[$i];
+            }elseif(isset($argument[3]))
+            {
+                $this->arguments[$argument[0]] = $argument[3];
             }
         }
     }
@@ -104,6 +107,9 @@ abstract class Command {
             if ($set)
             {
                 $this->options[$option[0]] = $value;
+            }elseif(isset($option[4]))
+            {
+                $this->options[$option[0]] = $option[4];
             }
         }
     }
