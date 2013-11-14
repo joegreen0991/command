@@ -266,14 +266,14 @@ abstract class Command {
         exit($exitcode);
     }
 
-    protected function getArgument($name, $default = null)
+    protected function getArgument($name)
     {
-        return isset($this->arguments[$name]) ? $this->arguments[$name] : $default;
+        return $this->arguments[$name];
     }
 
-    protected function getOption($name, $default = false)
+    protected function getOption($name)
     {
-        return isset($this->options[$name]) ? $this->options[$name] : $default;
+        return $this->options[$name];
     }
 
     private function getMergedOptions()
