@@ -109,7 +109,7 @@ abstract class Command {
 
             if ($set)
             {
-                $this->options[$option[0]] = $value;
+                $this->options[$option[0]] = (($option[2] & self::VALUE_NONE) === self::VALUE_NONE) ? true : $value;
             }elseif(isset($option[4]))
             {
                 $this->options[$option[0]] = $option[4];
