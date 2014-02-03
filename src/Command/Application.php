@@ -14,7 +14,9 @@ class Application extends Pimple {
     
     protected $autoResolveCommands = false;
     
-    protected $environment = null;
+    protected $environment;
+    
+    protected $resolvedCommand;
     
     public function setAutoResolveNamespaceSeparator($sep)
     {
@@ -94,11 +96,13 @@ class Application extends Pimple {
      * @param type $command
      * @return type
      */
-    protected function parseEnvironment($command)
+    protected function parseCommandAndEnvironment($command)
     {
         $parts = explode($this->environmentSeparator, $command);
         
-        return isset($parts[1]) ? $parts[1] : null;
+        isset($parts[1]) or $parts[1] = null;
+        
+        return array($parts[0], $parts[1]);
     }
     
     public function getEnvironment()
@@ -113,26 +117,26 @@ class Application extends Pimple {
 
     public function runFromArgv($output = null)
     {
-
         if($_SERVER['argc'] < 2){
             throw new CommandNotFoundException("Command not specified");
         }
         
+        list($command, $environment) =  $this->parseCommandAndEnvironment($_SERVER['argv'][1]);
+        
         list($arguments, $options) = Command::parseArgs(array_slice($_SERVER['argv'], 2));
-
-        $this->run($_SERVER['argv'][1], $arguments, $options, $output);
+        
+        $this->environment = $environment;
+        
+        $this->run($command, $arguments, $options, $output);
     }
 
-    public function run($command = null, $inputArgs = array(), $inputOptions = array(), LoggerInterface $output = null)
+    public function run($command = null, $inputArgs = array(), $inputOptions = array())
     {
-
-        $this->environment = $this->parseEnvironment($command);
-        
         $resolved = $this->getCommand($command);
         
         if (is_string($resolved))
         {
-            $resolved = new $resolved($command, $inputArgs, $inputOptions, $output);
+            $resolved = new $resolved($command, $inputArgs, $inputOptions);
         }
         
         $resolved->setApplication($this);
@@ -140,7 +144,6 @@ class Application extends Pimple {
         $resolved->configure();
 
         $resolved->fire();
-
     }
 
 }
