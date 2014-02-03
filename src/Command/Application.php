@@ -33,7 +33,7 @@ class Application extends Pimple {
 
         if (!is_string($command))
         {
-            $command = $this->share($command);
+            $command = function() {return $command;};
         }
 
         $this->commands[$name] = $command;
