@@ -114,6 +114,17 @@ class Application extends Pimple {
     {
          $this->environment = $env;
     }
+    
+    public function setEnvironmentFromArgv()
+    {
+        if($_SERVER['argc'] < 2){
+            throw new CommandNotFoundException("Command not specified");
+        }
+        
+        list(, $environment) =  $this->parseCommandAndEnvironment($_SERVER['argv'][1]);
+        
+        $this->setEnvironment($environment);
+    }
 
     public function runFromArgv($output = null)
     {
