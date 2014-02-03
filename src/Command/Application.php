@@ -10,7 +10,11 @@ class Application extends Pimple {
     
     protected $autoResolveNamespaceSeparator = ':';
     
+    protected $environmentSeparator = '@';
+    
     protected $autoResolveCommands = false;
+    
+    protected $environment = null;
     
     public function setAutoResolveNamespaceSeparator($sep)
     {
@@ -83,6 +87,29 @@ class Application extends Pimple {
         
         throw new CommandNotFoundException("Command [$command] does not exist");
     }
+    
+    /**
+     * Allow environment name to be set in the command, eg. command:name
+     * 
+     * @param type $command
+     * @return type
+     */
+    protected function parseEnvironment($command)
+    {
+        $parts = explode($this->environmentSeparator, $command);
+        
+        return isset($parts[1]) ? $parts[1] : null;
+    }
+    
+    public function getEnvironment()
+    {
+        return $this->environment;
+    }
+    
+    public function setEnvironment($env)
+    {
+         $this->environment = $env;
+    }
 
     public function runFromArgv($output = null)
     {
@@ -99,8 +126,10 @@ class Application extends Pimple {
     public function run($command = null, $inputArgs = array(), $inputOptions = array(), LoggerInterface $output = null)
     {
 
+        $this->environment = $this->parseEnvironment($command);
+        
         $resolved = $this->getCommand($command);
-
+        
         if (is_string($resolved))
         {
             $resolved = new $resolved($command, $inputArgs, $inputOptions, $output);
