@@ -136,7 +136,7 @@ class Application extends Pimple {
         
         list($arguments, $options) = Command::parseArgs(array_slice($_SERVER['argv'], 2));
         
-        $this->environment = $environment;
+        $this->environment or $this->environment = $environment;
         
         $this->run($command, $arguments, $options, $output);
     }
