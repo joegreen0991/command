@@ -9,7 +9,7 @@
     },
     "minimum-stability": "dev",
     "require" : {
-       "pimple/pimple" : "dev-master"
+       "pimple/pimple": "2.1.*"
     },
     "require-dev" : {
         "phpunit/phpunit" : "*",
