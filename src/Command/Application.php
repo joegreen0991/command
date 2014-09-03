@@ -141,13 +141,13 @@ class Application extends Pimple {
         $this->run($command, $arguments, $options, $output);
     }
 
-    public function run($command = null, $inputArgs = array(), $inputOptions = array())
+    public function run($command = null, $inputArgs = array(), $inputOptions = array(), LoggerInterface $output = null)
     {
         $resolved = $this->getCommand($command);
         
         if (is_string($resolved))
         {
-            $resolved = new $resolved($command, $inputArgs, $inputOptions);
+            $resolved = new $resolved($command, $inputArgs, $inputOptions, $output);
         }
         
         $resolved->setApplication($this);
