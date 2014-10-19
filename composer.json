@@ -1,5 +1,5 @@
 {
-    "name": "joegreen0991/command",
+    "name": "mrjgreen/command",
     "type": "library",
     "description": "Command component based on laravel's",
     "autoload": {
